@@ -7,8 +7,7 @@ OssPilot {{ .Chart.Version }}（镜像 tag {{ include "osspilot.imageTag" . }}�
 
 Worker 与对应 API 同一镜像，command 为 worker。migrate 是 pre-install/pre-upgrade Job。
 
-S3 / RGW 在运营端系统设置填写，不写进本 chart。
-ceph-mgmt 未单独部署；需要时设 ops.api.cephMgmtApiUrl。
+S3 / Ceph / ONLYOFFICE 在运营端系统设置填写，不写进本 chart。
 
 {{- if .Values.tenant.api.ingress.enabled }}
 租户 API Ingress: https://{{ .Values.tenant.api.ingress.host }}

@@ -50,14 +50,6 @@ spec:
                   key: projection-secret
             - name: TENANT_API_URL
               value: {{ include "osspilot.tenantApiUrl" . | quote }}
-            {{- if .Values.ops.api.cephMgmtApiUrl }}
-            - name: CEPH_MGMT_API_URL
-              value: {{ .Values.ops.api.cephMgmtApiUrl | quote }}
-            {{- end }}
-            {{- if .Values.ops.api.officeUrl }}
-            - name: OFFICE_URL
-              value: {{ .Values.ops.api.officeUrl | quote }}
-            {{- end }}
           livenessProbe:
             httpGet:
               path: /healthz
@@ -126,8 +118,6 @@ spec:
                 secretKeyRef:
                   name: {{ include "osspilot.secretName" . }}
                   key: ops-database-url
-            - name: LIFECYCLE_INTERVAL
-              value: {{ .Values.ops.worker.lifecycleInterval | quote }}
           {{- with .Values.ops.worker.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

@@ -1,10 +1,15 @@
 # OssPilot 本地联调 — 只拉 ghcr 镜像，不 build 兄弟仓源码。
-# Ceph/RGW/ONLYOFFICE 外接，见 .env.example。
+# 编排只注入库和 Redis。S3 / Ceph / ONLYOFFICE 在运营端系统设置填写。
 #
+#   docker login ghcr.io
 #   cp compose/.env.example compose/.env
+#   docker compose -f compose/docker-compose.yml --env-file compose/.env pull
 #   docker compose -f compose/docker-compose.yml --env-file compose/.env up -d
 
 name: osspilot
+
+x-ghcr: &ghcr
+  pull_policy: always
 
 services:
   tenant-postgres:
@@ -50,6 +55,7 @@ services:
       retries: 10
 
   tenant-migrate:
+    <<: *ghcr
     image: ghcr.io/cyxc1124/osspilot-tenant-api:${IMAGE_TAG:-develop}
     environment:
       DATABASE_URL: postgres://osspilot:osspilot@tenant-postgres:5432/osspilot_tenant?sslmode=disable
@@ -60,6 +66,7 @@ services:
     restart: "no"
 
   ops-migrate:
+    <<: *ghcr
     image: ghcr.io/cyxc1124/osspilot-ops-api:${IMAGE_TAG:-develop}
     environment:
       DATABASE_URL: postgres://osspilot:osspilot@ops-postgres:5432/osspilot_ops?sslmode=disable
@@ -70,8 +77,10 @@ services:
     restart: "no"
 
   tenant-api:
+    <<: *ghcr
     image: ghcr.io/cyxc1124/osspilot-tenant-api:${IMAGE_TAG:-develop}
     command: ["api"]
+    restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
@@ -83,28 +92,26 @@ services:
       PROJECTION_SECRET: ${PROJECTION_SECRET:-change-me-projection}
       TENANT_CORS_ORIGINS: ${TENANT_CORS_ORIGINS:-http://localhost:5173,http://localhost:8080}
       TENANT_API_PUBLIC_URL: ${TENANT_API_PUBLIC_URL:-http://localhost:8000}
-      S3_ENDPOINT: ${S3_ENDPOINT:-}
-      RGW_ACCESS_KEY: ${RGW_ACCESS_KEY:-}
-      RGW_SECRET_KEY: ${RGW_SECRET_KEY:-}
-      S3_REGION: ${S3_REGION:-us-east-1}
-      OFFICE_URL: ${OFFICE_URL:-}
-      OFFICE_JWT_SECRET: ${OFFICE_JWT_SECRET:-}
     depends_on:
       tenant-migrate:
         condition: service_completed_successfully
       tenant-redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8000/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
   tenant-worker:
+    <<: *ghcr
     image: ghcr.io/cyxc1124/osspilot-tenant-worker:${IMAGE_TAG:-develop}
     command: ["worker"]
+    restart: unless-stopped
     environment:
       DATABASE_URL: postgres://osspilot:osspilot@tenant-postgres:5432/osspilot_tenant?sslmode=disable
       REDIS_URL: redis://tenant-redis:6379/0
-      S3_ENDPOINT: ${S3_ENDPOINT:-}
-      RGW_ACCESS_KEY: ${RGW_ACCESS_KEY:-}
-      RGW_SECRET_KEY: ${RGW_SECRET_KEY:-}
-      S3_REGION: ${S3_REGION:-us-east-1}
     depends_on:
       tenant-migrate:
         condition: service_completed_successfully
@@ -112,8 +119,10 @@ services:
         condition: service_healthy
 
   ops-api:
+    <<: *ghcr
     image: ghcr.io/cyxc1124/osspilot-ops-api:${IMAGE_TAG:-develop}
     command: ["api"]
+    restart: unless-stopped
     ports:
       - "8001:8001"
     environment:
@@ -123,47 +132,52 @@ services:
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-60}
       TENANT_API_URL: http://tenant-api:8000
       PROJECTION_SECRET: ${PROJECTION_SECRET:-change-me-projection}
-      S3_ENDPOINT: ${S3_ENDPOINT:-}
-      RGW_ACCESS_KEY: ${RGW_ACCESS_KEY:-}
-      RGW_SECRET_KEY: ${RGW_SECRET_KEY:-}
-      CEPH_MGMT_API_URL: ${CEPH_MGMT_API_URL:-}
-      OFFICE_URL: ${OFFICE_URL:-}
     depends_on:
       ops-migrate:
         condition: service_completed_successfully
       tenant-api:
-        condition: service_started
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8001/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
   ops-worker:
+    <<: *ghcr
     image: ghcr.io/cyxc1124/osspilot-ops-worker:${IMAGE_TAG:-develop}
     command: ["worker"]
+    restart: unless-stopped
     environment:
       DATABASE_URL: postgres://osspilot:osspilot@ops-postgres:5432/osspilot_ops?sslmode=disable
-      S3_ENDPOINT: ${S3_ENDPOINT:-}
-      RGW_ACCESS_KEY: ${RGW_ACCESS_KEY:-}
-      RGW_SECRET_KEY: ${RGW_SECRET_KEY:-}
-      LIFECYCLE_INTERVAL: ${LIFECYCLE_INTERVAL:-1h}
     depends_on:
       ops-migrate:
         condition: service_completed_successfully
 
   tenant-web:
+    <<: *ghcr
     image: ghcr.io/cyxc1124/osspilot-tenant-web:${IMAGE_TAG:-develop}
+    restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
       OSSPILOT_API_URL: ${TENANT_WEB_API_URL:-http://localhost:8000}
     depends_on:
-      - tenant-api
+      tenant-api:
+        condition: service_healthy
 
   ops-web:
+    <<: *ghcr
     image: ghcr.io/cyxc1124/osspilot-ops-web:${IMAGE_TAG:-develop}
+    restart: unless-stopped
     ports:
       - "8081:8080"
     environment:
       OSSPILOT_API_URL: ${OPS_WEB_API_URL:-http://localhost:8001}
     depends_on:
-      - ops-api
+      ops-api:
+        condition: service_healthy
 
 volumes:
   tenant_pg:

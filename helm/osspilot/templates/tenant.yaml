@@ -57,15 +57,6 @@ spec:
               value: {{ .Values.tenant.api.publicUrl | quote }}
             - name: TENANT_CORS_ORIGINS
               value: {{ .Values.tenant.api.corsOrigins | quote }}
-            {{- if .Values.tenant.api.officeUrl }}
-            - name: OFFICE_URL
-              value: {{ .Values.tenant.api.officeUrl | quote }}
-            - name: OFFICE_JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "osspilot.secretName" . }}
-                  key: office-jwt-secret
-            {{- end }}
           livenessProbe:
             httpGet:
               path: /healthz

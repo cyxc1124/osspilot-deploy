@@ -1,5 +1,5 @@
-# 集群里自备两套 Postgres（osspilot_tenant / osspilot_ops）和一套 Redis。
-# S3 / RGW 在运营端系统设置填写，不在这里注入。
+# 必填：两套 Postgres（osspilot_tenant / osspilot_ops）和一套 Redis。
+# S3 / Ceph / ONLYOFFICE 在运营端系统设置填写，不在这里注入。
 # 真实密钥用 -f values-local.yaml 覆盖，不要提交。
 
 global:
@@ -8,7 +8,6 @@ global:
   imagePullSecrets: []
 
 # 若设置，须含 jwt-secret / projection-secret / tenant-database-url / ops-database-url / redis-url
-# 开了 tenant.api.officeUrl 时还要 office-jwt-secret
 existingSecret: ""
 
 jwt:
@@ -30,8 +29,6 @@ tenant:
     httpAddr: ":8000"
     publicUrl: http://localhost:8000
     corsOrigins: "http://localhost:8080"
-    officeUrl: ""
-    officeJwtSecret: ""
     service:
       type: ClusterIP
       port: 8000
@@ -73,8 +70,6 @@ ops:
     httpAddr: ":8001"
     # 空则指向本 release 的租户 API Service
     tenantApiUrl: ""
-    cephMgmtApiUrl: ""
-    officeUrl: ""
     service:
       type: ClusterIP
       port: 8001
@@ -89,7 +84,6 @@ ops:
     replicaCount: 1
     image:
       repository: ghcr.io/cyxc1124/osspilot-ops-worker
-    lifecycleInterval: 1h
     resources: {}
   web:
     replicaCount: 1
