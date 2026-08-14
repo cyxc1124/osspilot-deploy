@@ -21,7 +21,7 @@ docker compose -f compose/docker-compose.yml --env-file compose/.env up -d
 
 编排只注入库和 Redis。S3 / Ceph / ONLYOFFICE 在运营端系统设置填写，不写进 compose / Helm。未配时栈仍能起来：登录可用，上传 503，worker 跳过对象任务。
 
-镜像 tag 用 `IMAGE_TAG`（默认 `develop`）。应用镜像 `pull_policy: always`，每次 up 拉最新 `develop`。
+镜像 tag 用 `IMAGE_TAG`（默认 `develop`）。应用镜像 `linux/amd64` + `linux/arm64`，`pull_policy: always`，每次 up 拉最新 `develop`。
 
 改代码仍用各仓 `go run` / `npm run dev`；本 compose 用于联调已发布镜像。
 
