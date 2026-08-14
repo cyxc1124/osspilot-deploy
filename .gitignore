@@ -1,3 +1,5 @@
 compose/.env
 compose/data/
+helm/**/values-local.yaml
+helm/**/values-production.yaml
 .DS_Store

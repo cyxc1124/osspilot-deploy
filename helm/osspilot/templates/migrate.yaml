@@ -1,0 +1,77 @@
+# hook 早于本 release 的 Secret；库地址从 values 读（与 helm get values 同级可见）。
+# existingSecret 须在 install 前已存在。
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "osspilot.fullname" . }}-tenant-migrate
+  labels:
+    {{- include "osspilot.labels" . | nindent 4 }}
+    app.kubernetes.io/component: tenant-migrate
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        {{- include "osspilot.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: tenant-migrate
+    spec:
+      restartPolicy: OnFailure
+      {{- include "osspilot.imagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: migrate
+          image: "{{ .Values.tenant.api.image.repository }}:{{ include "osspilot.imageTag" . }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["migrate", "up"]
+          env:
+            - name: DATABASE_URL
+              {{- if .Values.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.existingSecret }}
+                  key: tenant-database-url
+              {{- else }}
+              value: {{ .Values.tenant.database.url | quote }}
+              {{- end }}
+      {{- include "osspilot.placement" . | nindent 6 }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "osspilot.fullname" . }}-ops-migrate
+  labels:
+    {{- include "osspilot.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ops-migrate
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        {{- include "osspilot.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: ops-migrate
+    spec:
+      restartPolicy: OnFailure
+      {{- include "osspilot.imagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: migrate
+          image: "{{ .Values.ops.api.image.repository }}:{{ include "osspilot.imageTag" . }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["migrate", "up"]
+          env:
+            - name: DATABASE_URL
+              {{- if .Values.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.existingSecret }}
+                  key: ops-database-url
+              {{- else }}
+              value: {{ .Values.ops.database.url | quote }}
+              {{- end }}
+      {{- include "osspilot.placement" . | nindent 6 }}

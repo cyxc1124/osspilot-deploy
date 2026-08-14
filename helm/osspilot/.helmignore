@@ -1,0 +1,4 @@
+.DS_Store
+values-local.yaml
+values-production.yaml
+*.tgz

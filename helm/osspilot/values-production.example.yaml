@@ -1,0 +1,59 @@
+# 复制为 values-production.yaml 或 values-local.yaml 后改。不要提交真实密钥。
+
+global:
+  imageTag: "v0.1.0"
+  imagePullSecrets:
+    - name: ghcr-pull-token
+
+jwt:
+  secret: "replace-me"
+  accessTokenExpireMinutes: 60
+
+projection:
+  secret: "replace-me"
+
+tenant:
+  database:
+    url: postgres://osspilot:replace-me@tenant-postgres:5432/osspilot_tenant?sslmode=require
+  redis:
+    url: redis://:replace-me@redis:6379/0
+  api:
+    publicUrl: https://tapi.example.com
+    corsOrigins: "https://console.example.com"
+    ingress:
+      enabled: true
+      className: traefik
+      host: tapi.example.com
+      annotations:
+        cert-manager.io/cluster-issuer: your-cluster-issuer
+      tlsSecretName: osspilot-tenant-api-tls
+  web:
+    apiUrl: https://tapi.example.com
+    ingress:
+      enabled: true
+      className: traefik
+      host: console.example.com
+      annotations:
+        cert-manager.io/cluster-issuer: your-cluster-issuer
+      tlsSecretName: osspilot-tenant-web-tls
+
+ops:
+  database:
+    url: postgres://osspilot:replace-me@ops-postgres:5432/osspilot_ops?sslmode=require
+  api:
+    ingress:
+      enabled: true
+      className: traefik
+      host: oapi.example.com
+      annotations:
+        cert-manager.io/cluster-issuer: your-cluster-issuer
+      tlsSecretName: osspilot-ops-api-tls
+  web:
+    apiUrl: https://oapi.example.com
+    ingress:
+      enabled: true
+      className: traefik
+      host: cmgt.example.com
+      annotations:
+        cert-manager.io/cluster-issuer: your-cluster-issuer
+      tlsSecretName: osspilot-ops-web-tls

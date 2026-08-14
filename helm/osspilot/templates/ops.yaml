@@ -1,0 +1,135 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "osspilot.fullname" . }}-ops-api
+  labels:
+    {{- include "osspilot.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ops-api
+spec:
+  replicas: {{ .Values.ops.api.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "osspilot.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: ops-api
+  template:
+    metadata:
+      labels:
+        {{- include "osspilot.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: ops-api
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      {{- include "osspilot.imagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: api
+          image: "{{ .Values.ops.api.image.repository }}:{{ include "osspilot.imageTag" . }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["api"]
+          ports:
+            - name: http
+              containerPort: 8001
+          env:
+            - name: HTTP_ADDR
+              value: {{ .Values.ops.api.httpAddr | quote }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "osspilot.secretName" . }}
+                  key: ops-database-url
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "osspilot.secretName" . }}
+                  key: jwt-secret
+            - name: JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+              value: {{ .Values.jwt.accessTokenExpireMinutes | quote }}
+            - name: PROJECTION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "osspilot.secretName" . }}
+                  key: projection-secret
+            - name: TENANT_API_URL
+              value: {{ include "osspilot.tenantApiUrl" . | quote }}
+            {{- if .Values.ops.api.cephMgmtApiUrl }}
+            - name: CEPH_MGMT_API_URL
+              value: {{ .Values.ops.api.cephMgmtApiUrl | quote }}
+            {{- end }}
+            {{- if .Values.ops.api.officeUrl }}
+            - name: OFFICE_URL
+              value: {{ .Values.ops.api.officeUrl | quote }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          {{- with .Values.ops.api.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- include "osspilot.placement" . | nindent 6 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "osspilot.fullname" . }}-ops-api
+  labels:
+    {{- include "osspilot.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ops-api
+spec:
+  type: {{ .Values.ops.api.service.type }}
+  selector:
+    {{- include "osspilot.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: ops-api
+  ports:
+    - name: http
+      port: {{ .Values.ops.api.service.port }}
+      targetPort: http
+{{- include "osspilot.ingress" (dict "root" . "svc" (printf "%s-ops-api" (include "osspilot.fullname" .)) "port" .Values.ops.api.service.port "ing" .Values.ops.api.ingress) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "osspilot.fullname" . }}-ops-worker
+  labels:
+    {{- include "osspilot.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ops-worker
+spec:
+  replicas: {{ .Values.ops.worker.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "osspilot.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: ops-worker
+  template:
+    metadata:
+      labels:
+        {{- include "osspilot.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: ops-worker
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      {{- include "osspilot.imagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: worker
+          image: "{{ .Values.ops.api.image.repository }}:{{ include "osspilot.imageTag" . }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["worker"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "osspilot.secretName" . }}
+                  key: ops-database-url
+            - name: LIFECYCLE_INTERVAL
+              value: {{ .Values.ops.worker.lifecycleInterval | quote }}
+          {{- with .Values.ops.worker.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- include "osspilot.placement" . | nindent 6 }}

@@ -21,7 +21,17 @@ Ceph/RGW/ONLYOFFICE 外接，不打进本仓。
 
 ## Helm
 
-等镜像 tag 稳定后再加 `helm/`，第一刀只有 compose。
+一张 umbrella chart：两端 API / worker / web，migrate 是 pre-install/pre-upgrade Job。worker 与对应 API 同一镜像（`command: worker`）。不内置 Postgres / Redis，不注入 S3。
+
+```bash
+helm lint helm/osspilot
+helm upgrade --install osspilot helm/osspilot -n osspilot --create-namespace \
+  -f helm/osspilot/values-local.yaml
+```
+
+生产覆盖可参考 `helm/osspilot/values-production.example.yaml`，复制为 `values-local.yaml` / `values-production.yaml`（已 gitignore）。`global.imageTag` 统一四仓镜像 tag。
+
+前置：集群里两套库（`osspilot_tenant` / `osspilot_ops`）和一套 Redis；把连接串写进 values。S3 / RGW 上线后在运营端系统设置填写。
 
 ## 许可
 

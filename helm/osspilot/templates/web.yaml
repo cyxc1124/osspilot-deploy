@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "osspilot.fullname" . }}-tenant-web
+  labels:
+    {{- include "osspilot.labels" . | nindent 4 }}
+    app.kubernetes.io/component: tenant-web
+spec:
+  replicas: {{ .Values.tenant.web.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "osspilot.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: tenant-web
+  template:
+    metadata:
+      labels:
+        {{- include "osspilot.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: tenant-web
+    spec:
+      {{- include "osspilot.imagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: web
+          image: "{{ .Values.tenant.web.image.repository }}:{{ include "osspilot.imageTag" . }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: OSSPILOT_API_URL
+              value: {{ .Values.tenant.web.apiUrl | quote }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+          {{- with .Values.tenant.web.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- include "osspilot.placement" . | nindent 6 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "osspilot.fullname" . }}-tenant-web
+  labels:
+    {{- include "osspilot.labels" . | nindent 4 }}
+    app.kubernetes.io/component: tenant-web
+spec:
+  type: {{ .Values.tenant.web.service.type }}
+  selector:
+    {{- include "osspilot.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: tenant-web
+  ports:
+    - name: http
+      port: {{ .Values.tenant.web.service.port }}
+      targetPort: http
+{{- include "osspilot.ingress" (dict "root" . "svc" (printf "%s-tenant-web" (include "osspilot.fullname" .)) "port" .Values.tenant.web.service.port "ing" .Values.tenant.web.ingress) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "osspilot.fullname" . }}-ops-web
+  labels:
+    {{- include "osspilot.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ops-web
+spec:
+  replicas: {{ .Values.ops.web.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "osspilot.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: ops-web
+  template:
+    metadata:
+      labels:
+        {{- include "osspilot.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: ops-web
+    spec:
+      {{- include "osspilot.imagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: web
+          image: "{{ .Values.ops.web.image.repository }}:{{ include "osspilot.imageTag" . }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: OSSPILOT_API_URL
+              value: {{ .Values.ops.web.apiUrl | quote }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+          {{- with .Values.ops.web.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- include "osspilot.placement" . | nindent 6 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "osspilot.fullname" . }}-ops-web
+  labels:
+    {{- include "osspilot.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ops-web
+spec:
+  type: {{ .Values.ops.web.service.type }}
+  selector:
+    {{- include "osspilot.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: ops-web
+  ports:
+    - name: http
+      port: {{ .Values.ops.web.service.port }}
+      targetPort: http
+{{- include "osspilot.ingress" (dict "root" . "svc" (printf "%s-ops-web" (include "osspilot.fullname" .)) "port" .Values.ops.web.service.port "ing" .Values.ops.web.ingress) }}
