@@ -96,7 +96,7 @@ services:
         condition: service_healthy
 
   tenant-worker:
-    image: ghcr.io/cyxc1124/osspilot-tenant-api:${IMAGE_TAG:-develop}
+    image: ghcr.io/cyxc1124/osspilot-tenant-worker:${IMAGE_TAG:-develop}
     command: ["worker"]
     environment:
       DATABASE_URL: postgres://osspilot:osspilot@tenant-postgres:5432/osspilot_tenant?sslmode=disable
@@ -135,7 +135,7 @@ services:
         condition: service_started
 
   ops-worker:
-    image: ghcr.io/cyxc1124/osspilot-ops-api:${IMAGE_TAG:-develop}
+    image: ghcr.io/cyxc1124/osspilot-ops-worker:${IMAGE_TAG:-develop}
     command: ["worker"]
     environment:
       DATABASE_URL: postgres://osspilot:osspilot@ops-postgres:5432/osspilot_ops?sslmode=disable
