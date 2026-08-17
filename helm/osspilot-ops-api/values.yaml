@@ -24,6 +24,17 @@ jwt:
 projection:
   secret: change-me-projection
 
+# 关于页展示的运行版本。空则用本 chart 的 image.tag / global.imageTag。
+# 六个服务独立发版时在这里填各仓实际 tag。
+about:
+  components:
+    tenantApi: ""
+    tenantWorker: ""
+    tenantWeb: ""
+    opsApi: ""
+    opsWorker: ""
+    opsWeb: ""
+
 service:
   type: ClusterIP
   port: 8001

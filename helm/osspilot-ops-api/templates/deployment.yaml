@@ -48,6 +48,23 @@ spec:
                   key: projection-secret
             - name: TENANT_API_URL
               value: {{ .Values.tenantApiUrl | quote }}
+            {{- $ver := .Values.image.tag | default .Values.global.imageTag | default .Chart.AppVersion }}
+            {{- $about := dict }}
+            {{- if and .Values.about .Values.about.components }}
+            {{- $about = .Values.about.components }}
+            {{- end }}
+            - name: OSSPILOT_TENANT_API_VERSION
+              value: {{ default $ver $about.tenantApi | quote }}
+            - name: OSSPILOT_TENANT_WORKER_VERSION
+              value: {{ default $ver $about.tenantWorker | quote }}
+            - name: OSSPILOT_TENANT_WEB_VERSION
+              value: {{ default $ver $about.tenantWeb | quote }}
+            - name: OSSPILOT_OPS_API_VERSION
+              value: {{ default $ver $about.opsApi | quote }}
+            - name: OSSPILOT_OPS_WORKER_VERSION
+              value: {{ default $ver $about.opsWorker | quote }}
+            - name: OSSPILOT_OPS_WEB_VERSION
+              value: {{ default $ver $about.opsWeb | quote }}
           livenessProbe:
             httpGet:
               path: /healthz

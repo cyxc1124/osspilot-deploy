@@ -132,6 +132,12 @@ services:
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-60}
       TENANT_API_URL: http://tenant-api:8000
       PROJECTION_SECRET: ${PROJECTION_SECRET:-change-me-projection}
+      OSSPILOT_TENANT_API_VERSION: ${IMAGE_TAG:-develop}
+      OSSPILOT_TENANT_WORKER_VERSION: ${IMAGE_TAG:-develop}
+      OSSPILOT_TENANT_WEB_VERSION: ${IMAGE_TAG:-develop}
+      OSSPILOT_OPS_API_VERSION: ${IMAGE_TAG:-develop}
+      OSSPILOT_OPS_WORKER_VERSION: ${IMAGE_TAG:-develop}
+      OSSPILOT_OPS_WEB_VERSION: ${IMAGE_TAG:-develop}
     depends_on:
       ops-migrate:
         condition: service_completed_successfully
