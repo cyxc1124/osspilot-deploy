@@ -1,0 +1,2 @@
+{{ include "osspilot.fullname" . }}  {{ include "osspilot.image" . }}
+清单 / 回收站 / 版本 / 分片。

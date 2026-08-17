@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "osspilot.fullname" . }}
+  labels:
+    {{- include "osspilot.labels" . | nindent 4 }}
+    app.kubernetes.io/component: tenant-api
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "osspilot.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "osspilot.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      {{- include "osspilot.imagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: api
+          image: "{{ include "osspilot.image" . }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          args: ["api"]
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: HTTP_ADDR
+              value: {{ .Values.httpAddr | quote }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "osspilot.secretName" . }}
+                  key: database-url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "osspilot.secretName" . }}
+                  key: redis-url
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "osspilot.secretName" . }}
+                  key: jwt-secret
+            - name: JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+              value: {{ .Values.jwt.accessTokenExpireMinutes | quote }}
+            - name: PROJECTION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "osspilot.secretName" . }}
+                  key: projection-secret
+            - name: TENANT_API_PUBLIC_URL
+              value: {{ .Values.publicUrl | quote }}
+            - name: TENANT_CORS_ORIGINS
+              value: {{ .Values.corsOrigins | quote }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- include "osspilot.placement" . | nindent 6 }}

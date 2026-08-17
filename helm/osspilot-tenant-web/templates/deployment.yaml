@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "osspilot.fullname" . }}
+  labels:
+    {{- include "osspilot.labels" . | nindent 4 }}
+    app.kubernetes.io/component: tenant-web
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "osspilot.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "osspilot.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- include "osspilot.imagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: web
+          image: "{{ include "osspilot.image" . }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: OSSPILOT_API_URL
+              value: {{ .Values.apiUrl | quote }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- include "osspilot.placement" . | nindent 6 }}

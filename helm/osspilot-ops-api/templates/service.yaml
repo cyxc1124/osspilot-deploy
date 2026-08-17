@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "osspilot.fullname" . }}
+  labels:
+    {{- include "osspilot.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ops-api
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "osspilot.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http
+{{- include "osspilot.ingress" (dict "root" . "svc" (include "osspilot.fullname" .) "port" .Values.service.port "ing" .Values.ingress) }}

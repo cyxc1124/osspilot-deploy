@@ -1,0 +1,6 @@
+{{ include "osspilot.fullname" . }}  {{ include "osspilot.image" . }}
+Service {{ include "osspilot.fullname" . }}:{{ .Values.service.port }}
+migrate 是 pre-install/pre-upgrade Job。
+{{- if .Values.ingress.enabled }}
+Ingress: https://{{ .Values.ingress.host }}
+{{- end }}

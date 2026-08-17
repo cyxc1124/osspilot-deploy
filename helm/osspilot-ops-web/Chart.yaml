@@ -1,0 +1,6 @@
+apiVersion: v2
+name: osspilot-ops-web
+description: OssPilot 运营控制台。只拉 GHCR，不 build 源码。
+type: application
+version: 0.1.0
+appVersion: "develop"

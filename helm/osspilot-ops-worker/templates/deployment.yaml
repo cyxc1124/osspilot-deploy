@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "osspilot.fullname" . }}
+  labels:
+    {{- include "osspilot.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ops-worker
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "osspilot.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "osspilot.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      {{- include "osspilot.imagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: worker
+          image: "{{ include "osspilot.image" . }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          args: ["worker"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "osspilot.secretName" . }}
+                  key: database-url
+            - name: PROJECTION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "osspilot.secretName" . }}
+                  key: projection-secret
+            - name: TENANT_API_URL
+              value: {{ .Values.tenantApiUrl | quote }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- include "osspilot.placement" . | nindent 6 }}

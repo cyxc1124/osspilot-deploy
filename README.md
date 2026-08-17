@@ -27,15 +27,23 @@ docker compose -f compose/docker-compose.yml --env-file compose/.env up -d
 
 ## Helm
 
-一张 umbrella chart：两端 API / worker / web，migrate 是 pre-install/pre-upgrade Job。worker 拉独立镜像（`osspilot-tenant-worker` / `osspilot-ops-worker`），`global.imageTag` 仍统一 tag。不内置 Postgres / Redis，不注入 S3 / Ceph / ONLYOFFICE。
+六个独立 chart，六个 release，对应六个服务仓。服务仓不放 chart。API chart 的 migrate 是 pre-install/pre-upgrade Job。`image.tag` 为空则用 `global.imageTag`。不内置 Postgres / Redis，不注入 S3 / Ceph / ONLYOFFICE。
+
+本仓只放占位符，禁止提交真实密码。现网是 `/Users/cyxc/Projects/helm-chart/osspilot-*`，密钥写在各目录的 `values-cyxc-club.yaml`。改模板时仓和现网一起维护。
 
 ```bash
-helm lint helm/osspilot
-helm upgrade --install osspilot helm/osspilot -n osspilot --create-namespace \
-  -f helm/osspilot/values-local.yaml
+helm lint helm/osspilot-tenant-api
+helm upgrade --install osspilot-tenant-api helm/osspilot-tenant-api \
+  -n osspilot --create-namespace -f helm/osspilot-tenant-api/values-local.yaml
+# osspilot-tenant-worker / osspilot-ops-api / osspilot-ops-worker
+# osspilot-tenant-web / osspilot-ops-web 同样
 ```
 
-生产覆盖可参考 `helm/osspilot/values-production.example.yaml`，复制为 `values-local.yaml` / `values-production.yaml`（已 gitignore）。`global.imageTag` 统一各仓镜像 tag。
+release 名即 Service 名（`osspilot-tenant-api:8000`）。只升一个服务：`--set image.tag=abc1234`。
+
+生产覆盖可参考各 chart 的 `values-production.example.yaml`，复制为 `values-local.yaml` / `values-production.yaml`（已 gitignore）。
+
+从旧的一张 `osspilot` umbrella 迁过来时先 `helm uninstall osspilot -n osspilot`，再装六个 release。
 
 前置：集群里两套库（`osspilot_tenant` / `osspilot_ops`）和一套 Redis；把连接串写进 values。S3 / Ceph / ONLYOFFICE 上线后在运营端系统设置填写。
 

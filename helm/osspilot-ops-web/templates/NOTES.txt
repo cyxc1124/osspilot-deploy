@@ -1,0 +1,5 @@
+{{ include "osspilot.fullname" . }}  {{ include "osspilot.image" . }}
+OSSPILOT_API_URL={{ .Values.apiUrl }}
+{{- if .Values.ingress.enabled }}
+Ingress: https://{{ .Values.ingress.host }}
+{{- end }}

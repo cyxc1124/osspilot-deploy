@@ -1,0 +1,2 @@
+{{ include "osspilot.fullname" . }}  {{ include "osspilot.image" . }}
+生命周期清理。TENANT_API_URL={{ .Values.tenantApiUrl }}

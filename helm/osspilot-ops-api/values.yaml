@@ -1,0 +1,44 @@
+# 真实密钥用 -f values-local.yaml 覆盖，不要提交。
+
+global:
+  imageTag: develop
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets: []
+
+existingSecret: ""
+
+image:
+  repository: ghcr.io/cyxc1124/osspilot-ops-api
+  tag: ""
+
+replicaCount: 1
+httpAddr: ":8001"
+tenantApiUrl: http://osspilot-tenant-api:8000
+
+database:
+  url: postgres://osspilot:osspilot@osspilot-ops-postgres:5432/osspilot_ops?sslmode=disable
+
+jwt:
+  secret: change-me-in-production
+  accessTokenExpireMinutes: 60
+projection:
+  secret: change-me-projection
+
+service:
+  type: ClusterIP
+  port: 8001
+ingress:
+  enabled: false
+  className: ""
+  host: oapi.example.com
+  annotations: {}
+  tlsSecretName: ""
+  certManager:
+    clusterIssuer: ""
+  ingressRoute:
+    http: false
+resources: {}
+
+nodeSelector: {}
+affinity: {}
+tolerations: []

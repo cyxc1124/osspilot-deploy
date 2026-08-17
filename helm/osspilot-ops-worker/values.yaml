@@ -1,0 +1,25 @@
+# 真实密钥用 -f values-local.yaml 覆盖，不要提交。
+
+global:
+  imageTag: develop
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets: []
+
+existingSecret: ""
+
+image:
+  repository: ghcr.io/cyxc1124/osspilot-ops-worker
+  tag: ""
+
+replicaCount: 1
+tenantApiUrl: http://osspilot-tenant-api:8000
+
+database:
+  url: postgres://osspilot:osspilot@osspilot-ops-postgres:5432/osspilot_ops?sslmode=disable
+projection:
+  secret: change-me-projection
+
+resources: {}
+nodeSelector: {}
+affinity: {}
+tolerations: []

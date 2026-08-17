@@ -1,6 +1,0 @@
-apiVersion: v2
-name: osspilot
-description: OssPilot 整栈。两端 API / worker / web；migrate 用对应 API 镜像，worker 用独立镜像。只拉 GHCR，不 build 源码。
-type: application
-version: 0.1.0
-appVersion: "develop"

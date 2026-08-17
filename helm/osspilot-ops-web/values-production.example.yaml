@@ -1,0 +1,15 @@
+# 复制为 values-local.yaml 或 values-production.yaml 后改。不要提交真实密钥。
+
+global:
+  imageTag: "v0.1.0"
+  imagePullSecrets:
+    - name: ghcr-pull-token
+
+apiUrl: https://oapi.example.com
+ingress:
+  enabled: true
+  className: traefik
+  host: cmgt.example.com
+  annotations:
+    cert-manager.io/cluster-issuer: your-cluster-issuer
+  tlsSecretName: osspilot-ops-web-tls

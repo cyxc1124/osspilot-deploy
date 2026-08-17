@@ -29,8 +29,9 @@ app.kubernetes.io/name: {{ include "osspilot.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
-{{- define "osspilot.imageTag" -}}
-{{- .Values.global.imageTag | default .Chart.AppVersion }}
+{{- define "osspilot.image" -}}
+{{- $tag := .Values.image.tag | default .Values.global.imageTag | default .Chart.AppVersion -}}
+{{- printf "%s:%s" .Values.image.repository $tag -}}
 {{- end }}
 
 {{- define "osspilot.secretName" -}}
@@ -38,14 +39,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- .Values.existingSecret }}
 {{- else }}
 {{- printf "%s-secrets" (include "osspilot.fullname" .) }}
-{{- end }}
-{{- end }}
-
-{{- define "osspilot.tenantApiUrl" -}}
-{{- if .Values.ops.api.tenantApiUrl }}
-{{- .Values.ops.api.tenantApiUrl }}
-{{- else }}
-{{- printf "http://%s-tenant-api:%v" (include "osspilot.fullname" .) .Values.tenant.api.service.port }}
 {{- end }}
 {{- end }}
 
@@ -71,11 +64,25 @@ tolerations:
 {{- end }}
 {{- end }}
 
+{{- define "osspilot.ingressTlsSecret" -}}
+{{- $svc := index . "svc" -}}
+{{- $ing := index . "ing" -}}
+{{- if $ing.tlsSecretName -}}
+{{- $ing.tlsSecretName -}}
+{{- else -}}
+{{- printf "%s-tls" $svc -}}
+{{- end -}}
+{{- end }}
+
 {{- define "osspilot.ingress" -}}
 {{- $svc := index . "svc" -}}
 {{- $port := index . "port" -}}
 {{- $ing := index . "ing" -}}
 {{- $root := index . "root" -}}
+{{- $issuer := "" -}}
+{{- if and $ing.certManager $ing.certManager.clusterIssuer -}}
+{{- $issuer = $ing.certManager.clusterIssuer -}}
+{{- end -}}
 {{- if $ing.enabled }}
 ---
 apiVersion: networking.k8s.io/v1
@@ -84,19 +91,22 @@ metadata:
   name: {{ $svc }}
   labels:
     {{- include "osspilot.labels" $root | nindent 4 }}
-  {{- with $ing.annotations }}
   annotations:
+    {{- if $issuer }}
+    cert-manager.io/cluster-issuer: {{ $issuer | quote }}
+    {{- end }}
+    {{- with $ing.annotations }}
     {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- end }}
 spec:
   {{- if $ing.className }}
   ingressClassName: {{ $ing.className | quote }}
   {{- end }}
-  {{- if $ing.tlsSecretName }}
+  {{- if or $ing.tlsSecretName $issuer }}
   tls:
     - hosts:
         - {{ $ing.host | quote }}
-      secretName: {{ $ing.tlsSecretName | quote }}
+      secretName: {{ include "osspilot.ingressTlsSecret" (dict "svc" $svc "ing" $ing) | quote }}
   {{- end }}
   rules:
     - host: {{ $ing.host | quote }}
@@ -109,5 +119,24 @@ spec:
                 name: {{ $svc }}
                 port:
                   number: {{ $port }}
+{{- end }}
+{{- if and $ing.host $ing.ingressRoute $ing.ingressRoute.http }}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ $svc }}-http
+  labels:
+    {{- include "osspilot.labels" $root | nindent 4 }}
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`{{ $ing.host }}`)
+      kind: Rule
+      priority: 1
+      services:
+        - name: {{ $svc }}
+          port: {{ $port }}
 {{- end }}
 {{- end }}

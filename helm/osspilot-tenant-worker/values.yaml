@@ -1,0 +1,24 @@
+# 真实密钥用 -f values-local.yaml 覆盖，不要提交。
+
+global:
+  imageTag: develop
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets: []
+
+existingSecret: ""
+
+image:
+  repository: ghcr.io/cyxc1124/osspilot-tenant-worker
+  tag: ""
+
+replicaCount: 1
+
+database:
+  url: postgres://osspilot:osspilot@osspilot-tenant-postgres:5432/osspilot_tenant?sslmode=disable
+redis:
+  url: redis://osspilot-tenant-redis:6379/0
+
+resources: {}
+nodeSelector: {}
+affinity: {}
+tolerations: []

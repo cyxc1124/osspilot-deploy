@@ -1,0 +1,6 @@
+apiVersion: v2
+name: osspilot-ops-worker
+description: OssPilot 运营 worker（生命周期清理）。只拉 GHCR，不 build 源码。
+type: application
+version: 0.1.0
+appVersion: "develop"

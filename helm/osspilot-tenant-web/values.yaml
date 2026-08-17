@@ -1,0 +1,32 @@
+# 真实密钥用 -f values-local.yaml 覆盖，不要提交。
+
+global:
+  imageTag: develop
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets: []
+
+image:
+  repository: ghcr.io/cyxc1124/osspilot-tenant-web
+  tag: ""
+
+replicaCount: 1
+apiUrl: http://localhost:8000
+
+service:
+  type: ClusterIP
+  port: 8080
+ingress:
+  enabled: false
+  className: ""
+  host: console.example.com
+  annotations: {}
+  tlsSecretName: ""
+  certManager:
+    clusterIssuer: ""
+  ingressRoute:
+    http: false
+resources: {}
+
+nodeSelector: {}
+affinity: {}
+tolerations: []

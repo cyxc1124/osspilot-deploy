@@ -1,0 +1,6 @@
+apiVersion: v2
+name: osspilot-ops-api
+description: OssPilot 运营 API。migrate 是 pre-install/pre-upgrade Job。只拉 GHCR，不 build 源码。
+type: application
+version: 0.1.0
+appVersion: "develop"

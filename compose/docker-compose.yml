@@ -151,9 +151,13 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: postgres://osspilot:osspilot@ops-postgres:5432/osspilot_ops?sslmode=disable
+      TENANT_API_URL: http://tenant-api:8000
+      PROJECTION_SECRET: ${PROJECTION_SECRET:-change-me-projection}
     depends_on:
       ops-migrate:
         condition: service_completed_successfully
+      tenant-api:
+        condition: service_healthy
 
   tenant-web:
     <<: *ghcr
