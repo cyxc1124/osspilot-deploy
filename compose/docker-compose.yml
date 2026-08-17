@@ -1,5 +1,6 @@
 # OssPilot 本地联调 — 只拉 ghcr 镜像，不 build 兄弟仓源码。
-# 编排只注入库和 Redis。S3 / Ceph / ONLYOFFICE 在运营端系统设置填写。
+# 编排只注入库和 Redis。S3 / ONLYOFFICE 在运营端系统设置填写。
+# ceph-mgmt 默认 mock；现网可把设置里的 ceph_mgmt_api_url 改成外接真服务。
 #
 #   docker login ghcr.io
 #   cp compose/.env.example compose/.env
@@ -110,6 +111,7 @@ services:
     command: ["worker"]
     restart: unless-stopped
     environment:
+      HTTP_ADDR: ":8080"
       DATABASE_URL: postgres://osspilot:osspilot@tenant-postgres:5432/osspilot_tenant?sslmode=disable
       REDIS_URL: redis://tenant-redis:6379/0
     depends_on:
@@ -117,6 +119,12 @@ services:
         condition: service_completed_successfully
       tenant-redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
   ops-api:
     <<: *ghcr
@@ -132,13 +140,31 @@ services:
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-60}
       TENANT_API_URL: http://tenant-api:8000
       PROJECTION_SECRET: ${PROJECTION_SECRET:-change-me-projection}
+      CEPH_MGMT_API_URL: http://ceph-mgmt:8082
     depends_on:
       ops-migrate:
         condition: service_completed_successfully
       tenant-api:
         condition: service_healthy
+      ceph-mgmt:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8001/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  ceph-mgmt:
+    <<: *ghcr
+    image: ghcr.io/cyxc1124/osspilot-ops-api:${IMAGE_TAG:-develop}
+    command: ["ceph-mgmt"]
+    restart: unless-stopped
+    environment:
+      HTTP_ADDR: ":8082"
+      CEPH_MGMT_BACKEND: mock
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8082/healthz"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -150,6 +176,7 @@ services:
     command: ["worker"]
     restart: unless-stopped
     environment:
+      HTTP_ADDR: ":8080"
       DATABASE_URL: postgres://osspilot:osspilot@ops-postgres:5432/osspilot_ops?sslmode=disable
       TENANT_API_URL: http://tenant-api:8000
       PROJECTION_SECRET: ${PROJECTION_SECRET:-change-me-projection}
@@ -158,6 +185,12 @@ services:
         condition: service_completed_successfully
       tenant-api:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
   tenant-web:
     <<: *ghcr

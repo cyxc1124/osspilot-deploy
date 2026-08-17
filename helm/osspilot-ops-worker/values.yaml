@@ -12,6 +12,7 @@ image:
   tag: ""
 
 replicaCount: 1
+httpAddr: ":8080"
 tenantApiUrl: http://osspilot-tenant-api:8000
 
 database:

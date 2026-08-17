@@ -48,6 +48,10 @@ spec:
                   key: projection-secret
             - name: TENANT_API_URL
               value: {{ .Values.tenantApiUrl | quote }}
+            {{- if .Values.cephMgmt.enabled }}
+            - name: CEPH_MGMT_API_URL
+              value: http://{{ include "osspilot.fullname" . }}-ceph-mgmt:{{ .Values.cephMgmt.servicePort }}
+            {{- end }}
           livenessProbe:
             httpGet:
               path: /healthz

@@ -12,6 +12,7 @@ image:
   tag: ""
 
 replicaCount: 1
+httpAddr: ":8080"
 
 database:
   url: postgres://osspilot:osspilot@osspilot-tenant-postgres:5432/osspilot_tenant?sslmode=disable
