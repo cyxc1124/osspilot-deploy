@@ -48,23 +48,15 @@ spec:
                   key: projection-secret
             - name: TENANT_API_URL
               value: {{ .Values.tenantApiUrl | quote }}
-            {{- $ver := .Values.image.tag | default .Values.global.imageTag | default .Chart.AppVersion }}
-            {{- $about := dict }}
-            {{- if and .Values.about .Values.about.components }}
-            {{- $about = .Values.about.components }}
-            {{- end }}
-            - name: OSSPILOT_TENANT_API_VERSION
-              value: {{ default $ver $about.tenantApi | quote }}
-            - name: OSSPILOT_TENANT_WORKER_VERSION
-              value: {{ default $ver $about.tenantWorker | quote }}
-            - name: OSSPILOT_TENANT_WEB_VERSION
-              value: {{ default $ver $about.tenantWeb | quote }}
-            - name: OSSPILOT_OPS_API_VERSION
-              value: {{ default $ver $about.opsApi | quote }}
-            - name: OSSPILOT_OPS_WORKER_VERSION
-              value: {{ default $ver $about.opsWorker | quote }}
-            - name: OSSPILOT_OPS_WEB_VERSION
-              value: {{ default $ver $about.opsWeb | quote }}
+            {{- $about := .Values.about | default dict }}
+            - name: OSSPILOT_TENANT_WORKER_URL
+              value: {{ $about.tenantWorkerUrl | default "http://osspilot-tenant-worker:8080" | quote }}
+            - name: OSSPILOT_TENANT_WEB_URL
+              value: {{ $about.tenantWebUrl | default "http://osspilot-tenant-web:8080" | quote }}
+            - name: OSSPILOT_OPS_WORKER_URL
+              value: {{ $about.opsWorkerUrl | default "http://osspilot-ops-worker:8080" | quote }}
+            - name: OSSPILOT_OPS_WEB_URL
+              value: {{ $about.opsWebUrl | default "http://osspilot-ops-web:8080" | quote }}
           livenessProbe:
             httpGet:
               path: /healthz

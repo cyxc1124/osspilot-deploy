@@ -15,15 +15,12 @@ database:
   url: postgres://osspilot:replace-me@ops-postgres:5432/osspilot_ops?sslmode=require
 tenantApiUrl: http://osspilot-tenant-api:8000
 
-# 六个服务 tag 不一致时按仓填写；空则用 global.imageTag。
+# 集群内探活地址，一般不用改。
 about:
-  components:
-    tenantApi: ""
-    tenantWorker: ""
-    tenantWeb: ""
-    opsApi: ""
-    opsWorker: ""
-    opsWeb: ""
+  tenantWorkerUrl: http://osspilot-tenant-worker:8080
+  tenantWebUrl: http://osspilot-tenant-web:8080
+  opsWorkerUrl: http://osspilot-ops-worker:8080
+  opsWebUrl: http://osspilot-ops-web:8080
 
 ingress:
   enabled: true

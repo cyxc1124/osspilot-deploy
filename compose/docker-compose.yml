@@ -110,6 +110,7 @@ services:
     command: ["worker"]
     restart: unless-stopped
     environment:
+      HTTP_ADDR: ":8080"
       DATABASE_URL: postgres://osspilot:osspilot@tenant-postgres:5432/osspilot_tenant?sslmode=disable
       REDIS_URL: redis://tenant-redis:6379/0
     depends_on:
@@ -117,6 +118,12 @@ services:
         condition: service_completed_successfully
       tenant-redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
   ops-api:
     <<: *ghcr
@@ -132,12 +139,10 @@ services:
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-60}
       TENANT_API_URL: http://tenant-api:8000
       PROJECTION_SECRET: ${PROJECTION_SECRET:-change-me-projection}
-      OSSPILOT_TENANT_API_VERSION: ${IMAGE_TAG:-develop}
-      OSSPILOT_TENANT_WORKER_VERSION: ${IMAGE_TAG:-develop}
-      OSSPILOT_TENANT_WEB_VERSION: ${IMAGE_TAG:-develop}
-      OSSPILOT_OPS_API_VERSION: ${IMAGE_TAG:-develop}
-      OSSPILOT_OPS_WORKER_VERSION: ${IMAGE_TAG:-develop}
-      OSSPILOT_OPS_WEB_VERSION: ${IMAGE_TAG:-develop}
+      OSSPILOT_TENANT_WORKER_URL: http://tenant-worker:8080
+      OSSPILOT_TENANT_WEB_URL: http://tenant-web:8080
+      OSSPILOT_OPS_WORKER_URL: http://ops-worker:8080
+      OSSPILOT_OPS_WEB_URL: http://ops-web:8080
     depends_on:
       ops-migrate:
         condition: service_completed_successfully
@@ -156,6 +161,7 @@ services:
     command: ["worker"]
     restart: unless-stopped
     environment:
+      HTTP_ADDR: ":8080"
       DATABASE_URL: postgres://osspilot:osspilot@ops-postgres:5432/osspilot_ops?sslmode=disable
       TENANT_API_URL: http://tenant-api:8000
       PROJECTION_SECRET: ${PROJECTION_SECRET:-change-me-projection}
@@ -164,6 +170,12 @@ services:
         condition: service_completed_successfully
       tenant-api:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
   tenant-web:
     <<: *ghcr

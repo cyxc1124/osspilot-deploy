@@ -24,16 +24,12 @@ jwt:
 projection:
   secret: change-me-projection
 
-# 关于页展示的运行版本。空则用本 chart 的 image.tag / global.imageTag。
-# 六个服务独立发版时在这里填各仓实际 tag。
+# 关于页探活地址。运营 API 读各进程自己报的版本，不要手填 tag。
 about:
-  components:
-    tenantApi: ""
-    tenantWorker: ""
-    tenantWeb: ""
-    opsApi: ""
-    opsWorker: ""
-    opsWeb: ""
+  tenantWorkerUrl: http://osspilot-tenant-worker:8080
+  tenantWebUrl: http://osspilot-tenant-web:8080
+  opsWorkerUrl: http://osspilot-ops-worker:8080
+  opsWebUrl: http://osspilot-ops-web:8080
 
 service:
   type: ClusterIP

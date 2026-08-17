@@ -12,7 +12,12 @@ image:
   tag: ""
 
 replicaCount: 1
+httpAddr: ":8080"
 tenantApiUrl: http://osspilot-tenant-api:8000
+
+service:
+  type: ClusterIP
+  port: 8080
 
 database:
   url: postgres://osspilot:osspilot@osspilot-ops-postgres:5432/osspilot_ops?sslmode=disable
