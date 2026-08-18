@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "osspilot.fullname" . }}
+  name: {{ include "osspilot.fullname" . }}-scheduler
   labels:
-    {{- include "osspilot.labels" . | nindent 4 }}
-    app.kubernetes.io/component: tenant-worker
+    {{- include "osspilot.schedulerLabels" . | nindent 4 }}
+    app.kubernetes.io/component: scheduler
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.scheduler.replicaCount }}
   selector:
     matchLabels:
-      {{- include "osspilot.selectorLabels" . | nindent 6 }}
+      {{- include "osspilot.schedulerSelectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "osspilot.selectorLabels" . | nindent 8 }}
+        {{- include "osspilot.schedulerSelectorLabels" . | nindent 8 }}
       annotations:
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
     spec:
       {{- include "osspilot.imagePullSecrets" . | nindent 6 }}
       containers:
-        - name: worker
+        - name: scheduler
           image: "{{ include "osspilot.image" . }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
-          args: ["worker"]
+          args: ["scheduler"]
           ports:
             - name: http
               containerPort: 8080
@@ -39,8 +39,8 @@ spec:
                 secretKeyRef:
                   name: {{ include "osspilot.secretName" . }}
                   key: redis-url
-            - name: ASYNQ_CONCURRENCY
-              value: {{ .Values.asynqConcurrency | quote }}
+            - name: LIFECYCLE_INTERVAL
+              value: {{ .Values.lifecycleInterval | quote }}
           livenessProbe:
             httpGet:
               path: /healthz
@@ -56,4 +56,4 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- include "osspilot.placement" . | nindent 6 }}
+      {{- include "osspilot.schedulerPlacement" . | nindent 6 }}

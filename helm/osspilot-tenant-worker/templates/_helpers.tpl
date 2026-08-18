@@ -29,6 +29,46 @@ app.kubernetes.io/name: {{ include "osspilot.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
+{{- define "osspilot.schedulerSelectorLabels" -}}
+app.kubernetes.io/name: {{ include "osspilot.name" . }}-scheduler
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{- define "osspilot.schedulerLabels" -}}
+helm.sh/chart: {{ include "osspilot.chart" . }}
+{{ include "osspilot.schedulerSelectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/part-of: osspilot
+{{- end }}
+
+{{- define "osspilot.schedulerPlacement" -}}
+{{- with .Values.nodeSelector }}
+nodeSelector:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- if .Values.affinity }}
+affinity:
+  {{- toYaml .Values.affinity | nindent 2 }}
+{{- else }}
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              {{- include "osspilot.schedulerSelectorLabels" . | nindent 14 }}
+          topologyKey: kubernetes.io/hostname
+{{- end }}
+{{- with .Values.tolerations }}
+tolerations:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
+
 {{- define "osspilot.image" -}}
 {{- $tag := .Values.image.tag | default .Values.global.imageTag | default .Chart.AppVersion -}}
 {{- printf "%s:%s" .Values.image.repository $tag -}}

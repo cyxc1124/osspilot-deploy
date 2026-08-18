@@ -1,6 +1,6 @@
 apiVersion: v2
 name: osspilot-tenant-worker
-description: OssPilot 租户 worker（清单 / 回收站 / 版本 / 分片）。只拉 GHCR，不 build 源码。
+description: OssPilot 租户 worker / scheduler（清单 / 回收站 / 版本 / 分片）。只拉 GHCR，不 build 源码。
 type: application
 version: 0.1.0
 appVersion: "develop"

@@ -11,7 +11,10 @@ image:
   repository: ghcr.io/cyxc1124/osspilot-tenant-worker
   tag: ""
 
-replicaCount: 1
+replicaCount: 2
+scheduler:
+  replicaCount: 2
+asynqConcurrency: 4
 httpAddr: ":8080"
 
 database:
