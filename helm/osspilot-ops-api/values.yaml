@@ -11,7 +11,7 @@ image:
   repository: ghcr.io/cyxc1124/osspilot-ops-api
   tag: ""
 
-replicaCount: 1
+replicaCount: 2
 httpAddr: ":8001"
 tenantApiUrl: http://osspilot-tenant-api:8000
 
