@@ -10,4 +10,4 @@
 
 Helm 是六张独立 chart（`helm/osspilot-tenant-api` 等），六个 release。不要收成一张 umbrella。worker 拉独立镜像。`image.tag` 为空则用 `global.imageTag`。启动不做 migrate，用对应 API chart 的 Job。
 
-本仓是 git 源。现网副本在 `/Users/cyxc/Projects/helm-chart/osspilot-*`（无 git，含真实密码）。改 chart 两份一起动：本仓只提交占位符；现网 `values-cyxc-club.yaml` 保留真实密钥，不要拷回本仓。
+本仓是 git 源。现网副本在 `/Users/cyxc/Projects/helm-chart/osspilot/osspilot-*`（无 git，含真实密码）。改 chart 两份一起动：本仓只提交占位符；现网 `values-cyxc-club.yaml` 保留真实密钥，不要拷回本仓。
