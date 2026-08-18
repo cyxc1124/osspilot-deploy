@@ -19,7 +19,7 @@ docker compose -f compose/docker-compose.yml --env-file compose/.env up -d
 
 运营种子账号 `admin` / `admin`（首次须改密）。租户没有种子用户，在运营端建账号并授权桶。
 
-编排只注入库和 Redis。S3 / ONLYOFFICE / Ceph 管理地址在运营端系统设置填写。compose 带 mock `ceph-mgmt`（ops-api 镜像 `command: ceph-mgmt`）。未配 S3 时栈仍能起来：登录可用，上传 503，worker 跳过对象任务。
+编排只注入库和 Redis。S3 / ONLYOFFICE / Ceph 管理地址在运营端系统设置填写。compose 带 mock `ceph-mgmt`（ops-api 镜像 `command: ceph-mgmt`）。worker 镜像另起 `tenant-scheduler` / `ops-scheduler`（同镜像 `command: scheduler`）。未配 S3 时栈仍能起来：登录可用，上传 503，worker 跳过对象任务。
 
 镜像 tag 用 `IMAGE_TAG`（默认 `develop`）。应用镜像 `linux/amd64` + `linux/arm64`，`pull_policy: always`，每次 up 拉最新 `develop`。
 

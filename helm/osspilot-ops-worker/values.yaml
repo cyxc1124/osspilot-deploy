@@ -11,8 +11,12 @@ image:
   repository: ghcr.io/cyxc1124/osspilot-ops-worker
   tag: ""
 
-replicaCount: 1
+replicaCount: 2
+scheduler:
+  replicaCount: 2
+asynqConcurrency: 4
 httpAddr: ":8080"
+lifecycleInterval: 1h
 tenantApiUrl: http://osspilot-tenant-api:8000
 
 database:

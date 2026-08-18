@@ -46,6 +46,8 @@ spec:
                   key: projection-secret
             - name: TENANT_API_URL
               value: {{ .Values.tenantApiUrl | quote }}
+            - name: ASYNQ_CONCURRENCY
+              value: {{ .Values.asynqConcurrency | quote }}
           livenessProbe:
             httpGet:
               path: /healthz

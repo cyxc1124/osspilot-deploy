@@ -1,2 +1,3 @@
 {{ include "osspilot.fullname" . }}  {{ include "osspilot.image" . }}
+worker {{ .Values.replicaCount }} 副本；scheduler {{ .Values.scheduler.replicaCount }} 副本。
 清单 / 回收站 / 版本 / 分片。
