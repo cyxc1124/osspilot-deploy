@@ -37,7 +37,7 @@ ingress:
     clusterIssuer: ""
   ingressRoute:
     http: false
-# 默认不启。现网可继续把系统设置 ceph_mgmt_api_url 指外接服务。
+# 默认不启。API 地址只读运营设置 ceph_mgmt_api_url，不注入 CEPH_MGMT_API_URL。
 # 镜像无 ceph 二进制；backend=ceph 需要自备带 CLI 的镜像或节点。
 cephMgmt:
   enabled: false

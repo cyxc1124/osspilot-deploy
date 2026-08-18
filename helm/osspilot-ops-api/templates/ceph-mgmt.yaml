@@ -1,4 +1,5 @@
-{{- if .Values.cephMgmt.enabled }}
+{{- $cm := .Values.cephMgmt | default dict }}
+{{- if $cm.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -31,12 +32,12 @@ spec:
               containerPort: 8082
           env:
             - name: HTTP_ADDR
-              value: {{ .Values.cephMgmt.httpAddr | quote }}
+              value: {{ default ":8082" $cm.httpAddr | quote }}
             - name: CEPH_MGMT_BACKEND
-              value: {{ .Values.cephMgmt.backend | quote }}
-            {{- if .Values.cephMgmt.cephConf }}
+              value: {{ default "mock" $cm.backend | quote }}
+            {{- if $cm.cephConf }}
             - name: CEPH_CONF
-              value: {{ .Values.cephMgmt.cephConf | quote }}
+              value: {{ $cm.cephConf | quote }}
             {{- end }}
           livenessProbe:
             httpGet:
@@ -62,7 +63,7 @@ spec:
   type: ClusterIP
   ports:
     - name: http
-      port: {{ .Values.cephMgmt.servicePort }}
+      port: {{ default 8082 $cm.servicePort }}
       targetPort: http
   selector:
     app.kubernetes.io/name: {{ include "osspilot.name" . }}
