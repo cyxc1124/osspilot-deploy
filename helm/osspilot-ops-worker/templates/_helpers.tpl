@@ -54,9 +54,19 @@ imagePullSecrets:
 nodeSelector:
   {{- toYaml . | nindent 2 }}
 {{- end }}
-{{- with .Values.affinity }}
+{{- if .Values.affinity }}
 affinity:
-  {{- toYaml . | nindent 2 }}
+  {{- toYaml .Values.affinity | nindent 2 }}
+{{- else }}
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              {{- include "osspilot.selectorLabels" . | nindent 14 }}
+          topologyKey: kubernetes.io/hostname
 {{- end }}
 {{- with .Values.tolerations }}
 tolerations:
