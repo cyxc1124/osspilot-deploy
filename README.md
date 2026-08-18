@@ -19,7 +19,7 @@ docker compose -f compose/docker-compose.yml --env-file compose/.env up -d
 
 运营种子账号 `admin` / `admin`（首次须改密）。租户没有种子用户，在运营端建账号并授权桶。
 
-编排只注入库和 Redis。S3 / ONLYOFFICE 在运营端系统设置填写。compose 带 mock `ceph-mgmt`（ops-api 镜像 `command: ceph-mgmt`）；Helm 默认不启，现网可继续把 `ceph_mgmt_api_url` 指外接服务。未配 S3 时栈仍能起来：登录可用，上传 503，worker 跳过对象任务。
+编排只注入库和 Redis。S3 / ONLYOFFICE / Ceph 管理地址在运营端系统设置填写。compose 带 mock `ceph-mgmt`（ops-api 镜像 `command: ceph-mgmt`）。未配 S3 时栈仍能起来：登录可用，上传 503，worker 跳过对象任务。
 
 镜像 tag 用 `IMAGE_TAG`（默认 `develop`）。应用镜像 `linux/amd64` + `linux/arm64`，`pull_policy: always`，每次 up 拉最新 `develop`。
 
@@ -27,7 +27,7 @@ docker compose -f compose/docker-compose.yml --env-file compose/.env up -d
 
 ## Helm
 
-六个独立 chart，六个 release，对应六个服务仓。服务仓不放 chart。API chart 的 migrate 是 pre-install/pre-upgrade Job。`image.tag` 为空则用 `global.imageTag`。不内置 Postgres / Redis，不注入 S3 / ONLYOFFICE。ops-api chart 的 `cephMgmt.enabled` 默认 false。
+六个独立 chart，六个 release，对应六个服务仓。服务仓不放 chart。API chart 的 migrate 是 pre-install/pre-upgrade Job。`image.tag` 为空则用 `global.imageTag`。不内置 Postgres / Redis，不注入 S3 / ONLYOFFICE / Ceph 管理地址。
 
 本仓只放占位符，禁止提交真实密码。现网是 `/Users/cyxc/Projects/helm-chart/osspilot-*`，密钥写在各目录的 `values-cyxc-club.yaml`。改模板时仓和现网一起维护。
 

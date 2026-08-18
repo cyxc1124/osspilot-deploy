@@ -9,7 +9,7 @@ image:
   repository: ghcr.io/cyxc1124/osspilot-ops-web
   tag: ""
 
-replicaCount: 1
+replicaCount: 2
 apiUrl: http://localhost:8001
 
 service:

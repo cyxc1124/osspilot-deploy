@@ -11,7 +11,7 @@ image:
   repository: ghcr.io/cyxc1124/osspilot-ops-api
   tag: ""
 
-replicaCount: 1
+replicaCount: 2
 httpAddr: ":8001"
 tenantApiUrl: http://osspilot-tenant-api:8000
 
@@ -37,14 +37,6 @@ ingress:
     clusterIssuer: ""
   ingressRoute:
     http: false
-# 默认不启。现网可继续把系统设置 ceph_mgmt_api_url 指外接服务。
-# 镜像无 ceph 二进制；backend=ceph 需要自备带 CLI 的镜像或节点。
-cephMgmt:
-  enabled: false
-  httpAddr: ":8082"
-  servicePort: 8082
-  backend: mock
-  cephConf: ""
 
 resources: {}
 
