@@ -17,6 +17,8 @@ tenantApiUrl: http://osspilot-tenant-api:8000
 
 database:
   url: postgres://osspilot:osspilot@osspilot-ops-postgres:5432/osspilot_ops?sslmode=disable
+redis:
+  url: redis://osspilot-tenant-redis:6379/1
 projection:
   secret: change-me-projection
 
