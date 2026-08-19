@@ -57,7 +57,7 @@ services:
 
   tenant-migrate:
     <<: *ghcr
-    image: ghcr.io/cyxc1124/osspilot-tenant-api:${IMAGE_TAG:-develop}
+    image: ghcr.io/cyxc1124/osspilot-tenant-api:${IMAGE_TAG:-latest}
     environment:
       DATABASE_URL: postgres://osspilot:osspilot@tenant-postgres:5432/osspilot_tenant?sslmode=disable
     command: ["migrate", "up"]
@@ -68,7 +68,7 @@ services:
 
   ops-migrate:
     <<: *ghcr
-    image: ghcr.io/cyxc1124/osspilot-ops-api:${IMAGE_TAG:-develop}
+    image: ghcr.io/cyxc1124/osspilot-ops-api:${IMAGE_TAG:-latest}
     environment:
       DATABASE_URL: postgres://osspilot:osspilot@ops-postgres:5432/osspilot_ops?sslmode=disable
     command: ["migrate", "up"]
@@ -79,7 +79,7 @@ services:
 
   tenant-api:
     <<: *ghcr
-    image: ghcr.io/cyxc1124/osspilot-tenant-api:${IMAGE_TAG:-develop}
+    image: ghcr.io/cyxc1124/osspilot-tenant-api:${IMAGE_TAG:-latest}
     command: ["api"]
     restart: unless-stopped
     ports:
@@ -107,7 +107,7 @@ services:
 
   tenant-worker:
     <<: *ghcr
-    image: ghcr.io/cyxc1124/osspilot-tenant-worker:${IMAGE_TAG:-develop}
+    image: ghcr.io/cyxc1124/osspilot-tenant-worker:${IMAGE_TAG:-latest}
     command: ["worker"]
     restart: unless-stopped
     environment:
@@ -128,7 +128,7 @@ services:
 
   tenant-scheduler:
     <<: *ghcr
-    image: ghcr.io/cyxc1124/osspilot-tenant-worker:${IMAGE_TAG:-develop}
+    image: ghcr.io/cyxc1124/osspilot-tenant-worker:${IMAGE_TAG:-latest}
     command: ["scheduler"]
     restart: unless-stopped
     environment:
@@ -149,7 +149,7 @@ services:
 
   ops-api:
     <<: *ghcr
-    image: ghcr.io/cyxc1124/osspilot-ops-api:${IMAGE_TAG:-develop}
+    image: ghcr.io/cyxc1124/osspilot-ops-api:${IMAGE_TAG:-latest}
     command: ["api"]
     restart: unless-stopped
     ports:
@@ -178,7 +178,7 @@ services:
 
   ceph-mgmt:
     <<: *ghcr
-    image: ghcr.io/cyxc1124/osspilot-ops-api:${IMAGE_TAG:-develop}
+    image: ghcr.io/cyxc1124/osspilot-ops-api:${IMAGE_TAG:-latest}
     command: ["ceph-mgmt"]
     restart: unless-stopped
     environment:
@@ -193,7 +193,7 @@ services:
 
   ops-worker:
     <<: *ghcr
-    image: ghcr.io/cyxc1124/osspilot-ops-worker:${IMAGE_TAG:-develop}
+    image: ghcr.io/cyxc1124/osspilot-ops-worker:${IMAGE_TAG:-latest}
     command: ["worker"]
     restart: unless-stopped
     environment:
@@ -218,7 +218,7 @@ services:
 
   ops-scheduler:
     <<: *ghcr
-    image: ghcr.io/cyxc1124/osspilot-ops-worker:${IMAGE_TAG:-develop}
+    image: ghcr.io/cyxc1124/osspilot-ops-worker:${IMAGE_TAG:-latest}
     command: ["scheduler"]
     restart: unless-stopped
     environment:
@@ -239,7 +239,7 @@ services:
 
   tenant-web:
     <<: *ghcr
-    image: ghcr.io/cyxc1124/osspilot-tenant-web:${IMAGE_TAG:-develop}
+    image: ghcr.io/cyxc1124/osspilot-tenant-web:${IMAGE_TAG:-latest}
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -251,7 +251,7 @@ services:
 
   ops-web:
     <<: *ghcr
-    image: ghcr.io/cyxc1124/osspilot-ops-web:${IMAGE_TAG:-develop}
+    image: ghcr.io/cyxc1124/osspilot-ops-web:${IMAGE_TAG:-latest}
     restart: unless-stopped
     ports:
       - "8081:8080"
