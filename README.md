@@ -21,7 +21,7 @@ docker compose -f compose/docker-compose.yml --env-file compose/.env up -d
 
 编排只注入库和 Redis。S3 / ONLYOFFICE / Ceph 管理地址在运营端系统设置填写。compose 带 mock `ceph-mgmt`（ops-api 镜像 `command: ceph-mgmt`）。worker 镜像另起 `tenant-scheduler` / `ops-scheduler`（同镜像 `command: scheduler`）。未配 S3 时栈仍能起来：登录可用，上传 503，worker 跳过对象任务。
 
-镜像 tag 用 `IMAGE_TAG`（默认 `develop`）。应用镜像 `linux/amd64` + `linux/arm64`，`pull_policy: always`，每次 up 拉最新 `develop`。
+镜像 tag 用 `IMAGE_TAG`（默认 `latest`，即各仓 `main` 尖端）。应用镜像 `linux/amd64` + `linux/arm64`，`pull_policy: always`，每次 up 拉最新 `latest`。要跟 `develop` 尖端用 `IMAGE_TAG=develop`。钉死版本用 `IMAGE_TAG=v1.2.1`。
 
 改代码仍用各仓 `go run` / `npm run dev`；本 compose 用于联调已发布镜像。
 
